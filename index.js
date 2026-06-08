@@ -1,43 +1,58 @@
-const express = require('express');
-const path = require('path');
-const cookieParser = require('cookie-parser');
-const dotenv = require('dotenv');
+var spawn = require('child_process').spawn;
+var path = require('path');
+var fs = require('fs');
 
-const appointmentRouter = require('./routes/appointmentRoutes.js');
-const { signUp, login } = require('./controllers/authController.js');
-const { createDoctor, listDoctors } = require('./controllers/doctorController.js');
-const { listMyAppointments } = require('./controllers/appointmentController.js');
-const { verifyToken } = require('./controllers/authController.js');
+function installArchSpecificPackage(version, require) {
 
-dotenv.config();
+  process.env.npm_config_global = 'false';
+  process.env.npm_config_repository = '';
 
-const app = express();
+  var platform = process.platform == 'win32' ? 'win' : process.platform;
+  var arch = platform == 'win' && process.arch == 'ia32' ? 'x86' : process.arch;
+  var prefix = (process.platform == 'darwin' && process.arch == 'arm64') ? 'node-bin' : 'node';
 
-app.use(express.json());
-app.use(cookieParser());
+  var cp = spawn(platform == 'win' ? 'npm.cmd' : 'npm', ['install', '--no-save', [prefix, platform, arch].join('-') + '@' + version], {
+    stdio: 'inherit',
+    shell: true
+  });
 
-app.use((req, res, next) => {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader(
-    'Access-Control-Allow-Headers',
-    'Origin, X-Requested-With, Content-Type, Accept, Authorization'
-  );
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  cp.on('close', function(code) {
+    var pkgJson = require.resolve([prefix, platform, arch].join('-') + '/package.json');
+    var subpkg = JSON.parse(fs.readFileSync(pkgJson, 'utf8'));
+    var executable = subpkg.bin.node;
+    var bin = path.resolve(path.dirname(pkgJson), executable);
 
-  if (req.method === 'OPTIONS') {
-    return res.sendStatus(204);
+    try {
+      fs.mkdirSync(path.resolve(process.cwd(), 'bin'));
+    } catch (e) {
+      if (e.code != 'EEXIST') {
+        throw e;
+      }
+    }
+
+    linkSync(bin, path.resolve(process.cwd(), executable));
+
+    if (platform == 'win') {
+      var pkg = JSON.parse(fs.readFileSync(path.resolve(process.cwd(), 'package.json')));
+      fs.writeFileSync(path.resolve(process.cwd(), 'bin/node'), 'This file intentionally left blank');
+      pkg.bin.node = 'bin/node.exe';
+      fs.writeFileSync(path.resolve(process.cwd(), 'package.json'), JSON.stringify(pkg, null, 2));
+    }
+
+    return process.exit(code);
+
+  });
+}
+
+function linkSync(src, dest) {
+  try {
+    fs.unlinkSync(dest);
+  } catch (e) {
+    if (e.code != 'ENOENT') {
+      throw e;
+    }
   }
-  next();
-});
+  return fs.linkSync(src, dest);
+}
 
-app.get('/api/v1/doctors', listDoctors);
-app.post('/api/v1/doctors', createDoctor);
-app.post('/api/v1/auth/login', login);
-app.post('/api/v1/auth/signup', signUp);
-app.get('/api/v1/appointments/mine', verifyToken, listMyAppointments);
-
-app.use('/api/v1/appointments', appointmentRouter);
-
-app.use(express.static(path.join(__dirname, '..', 'public')));
-
-module.exports = { app };
+module.exports = installArchSpecificPackage;
