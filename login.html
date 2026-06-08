@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login - MedCare Clinic</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="logo">MedCare <span>Clinic</span></a>
+      <nav id="main-nav"></nav>
+    </div>
+  </header>
+
+  <div class="form-box">
+    <h2>Login</h2>
+    <form id="login-form">
+      <label>
+        Email
+        <input type="email" id="email" required />
+      </label>
+      <label>
+        Password
+        <input type="password" id="password" required />
+      </label>
+      <button type="submit">Login</button>
+    </form>
+    <p id="msg" class="message"></p>
+    <p class="form-footer">No account? <a href="/signup.html">Sign up here</a></p>
+  </div>
+
+  <script src="app.js"></script>
+  <script>
+    if (isLoggedIn()) {
+      window.location.href = '/';
+    }
+
+    document.getElementById('login-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+      const msg = document.getElementById('msg');
+
+      const res = await api('/api/v1/auth/login', {
+        method: 'POST',
+        body: JSON.stringify({ email, password }),
+      });
+
+      if (res.status === 200) {
+        saveSession(res.data.token, res.data.user);
+        const params = new URLSearchParams(window.location.search);
+        const redirect = params.get('redirect') || '/';
+        window.location.href = redirect;
+      } else {
+        showMessage(msg, res.data.message || 'Login failed.', true);
+      }
+    });
+  </script>
+</body>
+</html>

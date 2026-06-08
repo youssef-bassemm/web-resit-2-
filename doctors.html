@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Our Doctors - MedCare Clinic</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="logo">MedCare <span>Clinic</span></a>
+      <nav id="main-nav"></nav>
+    </div>
+  </header>
+
+  <div class="container">
+    <h2 class="section-title">Our Doctors</h2>
+    <p style="margin-bottom:1.5rem;color:#64748b;">Meet our team of specialists. Click Book to schedule a visit.</p>
+    <div id="doctor-grid" class="grid"></div>
+    <p id="msg" class="message"></p>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div>
+        <h4>MedCare Clinic</h4>
+        <p>123 Health Street, Medical City</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+  <script>
+    async function loadDoctors() {
+      const grid = document.getElementById('doctor-grid');
+      const msg = document.getElementById('msg');
+
+      const res = await api('/api/v1/doctors');
+      if (res.status !== 200 || !Array.isArray(res.data)) {
+        grid.innerHTML = '<p class="empty-state">Could not load doctors.</p>';
+        return;
+      }
+
+      if (res.data.length === 0) {
+        grid.innerHTML = '<p class="empty-state">No doctors available yet.</p>';
+        return;
+      }
+
+      grid.innerHTML = res.data.map((doc) => `
+        <div class="card">
+          <h3>${doc.NAME}</h3>
+          <p class="spec">${doc.SPECIALIZATION}</p>
+          <p class="hours">Available: ${doc.AVAILABILITY || 'Mon-Fri 9am-5pm'}</p>
+          <a href="/book.html?doctor=${doc.ID}" class="btn-primary" style="display:inline-block;width:auto;margin-top:1rem;padding:0.5rem 1rem;text-decoration:none;">Book</a>
+        </div>
+      `).join('');
+    }
+
+    loadDoctors();
+  </script>
+</body>
+</html>

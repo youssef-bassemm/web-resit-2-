@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sign Up - MedCare Clinic</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="logo">MedCare <span>Clinic</span></a>
+      <nav id="main-nav"></nav>
+    </div>
+  </header>
+
+  <div class="form-box">
+    <h2>Create Account</h2>
+    <form id="signup-form">
+      <label>
+        Email
+        <input type="email" id="email" required />
+      </label>
+      <label>
+        Password
+        <input type="password" id="password" required minlength="6" />
+      </label>
+      <label>
+        Confirm Password
+        <input type="password" id="confirm" required />
+      </label>
+      <button type="submit">Sign Up</button>
+    </form>
+    <p id="msg" class="message"></p>
+    <p class="form-footer">Already have an account? <a href="/login.html">Login</a></p>
+  </div>
+
+  <script src="app.js"></script>
+  <script>
+    if (isLoggedIn()) {
+      window.location.href = '/';
+    }
+
+    document.getElementById('signup-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+      const confirm = document.getElementById('confirm').value;
+      const msg = document.getElementById('msg');
+
+      if (password !== confirm) {
+        return showMessage(msg, 'Passwords do not match.', true);
+      }
+
+      const res = await api('/api/v1/auth/signup', {
+        method: 'POST',
+        body: JSON.stringify({ email, password }),
+      });
+
+      if (res.status === 201) {
+        saveSession(res.data.token, res.data.user);
+        window.location.href = '/book.html';
+      } else {
+        showMessage(msg, res.data.message || 'Sign up failed.', true);
+      }
+    });
+  </script>
+</body>
+</html>

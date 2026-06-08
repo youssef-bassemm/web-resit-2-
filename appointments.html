@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Appointments - MedCare Clinic</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="logo">MedCare <span>Clinic</span></a>
+      <nav id="main-nav"></nav>
+    </div>
+  </header>
+
+  <div class="container">
+    <h2 class="section-title">My Appointments</h2>
+    <ul id="appt-list" class="appt-list"></ul>
+    <p id="msg" class="message"></p>
+    <p style="margin-top:1.5rem;">
+      <a href="/book.html" class="btn-primary" style="display:inline-block;width:auto;padding:0.5rem 1rem;text-decoration:none;">Book Another</a>
+    </p>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div>
+        <h4>MedCare Clinic</h4>
+        <p>123 Health Street, Medical City</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+  <script>
+    if (!requireLogin()) throw new Error('redirect');
+
+    async function loadAppointments() {
+      const list = document.getElementById('appt-list');
+      const msg = document.getElementById('msg');
+
+      const res = await api('/api/v1/appointments/mine');
+
+      if (res.status !== 200) {
+        showMessage(msg, res.data.message || 'Could not load appointments.', true);
+        return;
+      }
+
+      if (!res.data.length) {
+        list.innerHTML = '<p class="empty-state">You have no appointments yet. <a href="/book.html">Book one now</a>.</p>';
+        return;
+      }
+
+      list.innerHTML = res.data.map((a) => `
+        <li>
+          <div>
+            <span class="date">${a.APPOINTMENT_DATE} at ${a.APPOINTMENT_TIME}</span>
+            <p class="doctor">${a.DOCTOR_NAME} - ${a.SPECIALIZATION}</p>
+          </div>
+          <span>${a.PATIENT_NAME}</span>
+        </li>
+      `).join('');
+    }
+
+    loadAppointments();
+  </script>
+</body>
+</html>

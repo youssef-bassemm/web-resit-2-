@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Doctor Dashboard - MedCare Clinic</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="logo">MedCare <span>Clinic</span></a>
+      <nav>
+        <a href="/">Home</a>
+        <a href="/doctor.html" class="active">Doctor Portal</a>
+      </nav>
+    </div>
+  </header>
+
+  <div class="container">
+    <h2 class="section-title">Doctor Portal</h2>
+
+    <div class="two-col">
+      <div class="card">
+        <h3>Add Doctor Profile</h3>
+        <form id="doctor-form">
+          <label>
+            Full Name
+            <input type="text" id="doctor-name" required placeholder="Dr. John Smith" />
+          </label>
+          <label>
+            Specialization
+            <input type="text" id="doctor-specialization" required placeholder="e.g. Cardiology" />
+          </label>
+          <label>
+            Availability
+            <input type="text" id="doctor-availability" placeholder="Mon-Fri 9am-5pm" />
+          </label>
+          <button type="submit">Save Profile</button>
+        </form>
+        <p id="doctor-msg" class="message"></p>
+      </div>
+
+      <div class="card">
+        <h3>View Appointments</h3>
+        <label>
+          Select Doctor
+          <select id="doctor-select">
+            <option value="">-- Load doctors first --</option>
+          </select>
+        </label>
+        <button id="load-appts-btn" style="margin-top:0.75rem;">Load Appointments</button>
+        <ul id="appt-list" class="appt-list" style="margin-top:1rem;"></ul>
+        <p id="appt-msg" class="message"></p>
+      </div>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div>
+        <h4>MedCare Clinic - Staff</h4>
+        <p>Internal use only</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+  <script src="doctor.js"></script>
+</body>
+</html>
